@@ -99,7 +99,10 @@ class RequirementService
     {
         $results = [];
         foreach ($folders as $folder => $permission) {
-            $perm = substr(sprintf('%o', fileperms(base_path($folder))), -4);
+            if (!file_exists(base_path($folder))) {
+                @mkdir(base_path($folder), 0755, true);
+            }
+            $perm = substr(sprintf('%o', @fileperms(base_path($folder))), -4);
             $results[] = [
                 'title' => $folder,
                 'config' => $perm,

@@ -26,9 +26,7 @@ namespace PTAdmin\Install\Service;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
 use PTAdmin\Install\Exceptions\InstallException;
 
 class EnvService
@@ -117,7 +115,7 @@ class EnvService
         app('db')->purge();
 
         try {
-            DB::connection()->getPdo();
+            app('db')->connection()->getPdo();
         } catch (\Exception $e) {
             throw new InstallException($e->getMessage());
         }

@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace PTAdmin\Install\Service;
 
 use Illuminate\Support\Facades\Artisan;
-use Symfony\Component\Console\Output\BufferedOutput;
 use PTAdmin\Addon\Service\Database;
 use PTAdmin\Install\Exceptions\InstallException;
 
@@ -43,8 +42,7 @@ class SqlService
     public function initialization(): void
     {
         try {
-            $buffer = new BufferedOutput();
-            Artisan::call('migrate', ['--force' => true], $buffer);
+            Artisan::call('migrate', ['--force' => true]);
         } catch (\Exception $exception) {
             throw new InstallException($exception->getMessage());
         }
