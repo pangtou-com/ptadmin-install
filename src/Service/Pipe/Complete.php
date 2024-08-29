@@ -21,41 +21,32 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
-namespace PTAdmin\Install\Service;
+namespace PTAdmin\Install\Service\Pipe;
 
 use Illuminate\Support\Facades\Artisan;
-use PTAdmin\Addon\Service\Database;
-use PTAdmin\Install\Exceptions\InstallException;
+use Illuminate\Support\Facades\File;
 
-class SqlService
+class Complete
 {
-    private $database;
+    use FormatOutputTrait;
 
-    public function __construct(Database $database)
+    public function handle($data, \Closure $next): void
     {
-        $this->database = $database;
-    }
+        $this->process('创建管理员账户');
+        $status = Artisan::call('admin:init', ['-u' => $data['username'], '-p' => $data['password'], '-f' => true]);
+        if (0 !== $status) {
+            $this->error('创建管理员失败:'.Artisan::output());
 
-    /**
-     * 初始化数据表结构.
-     */
-    public function initialization(): void
-    {
-        try {
-            Artisan::call('migrate', ['--force' => true]);
-        } catch (\Exception $exception) {
-            throw new InstallException($exception->getMessage());
+            return;
         }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function run(): void
-    {
-        $filename = base_path('package/Install/init.sql');
-        if (is_file($filename)) {
-            $this->database->restoreData($filename);
-        }
+        File::put(storage_path('installed'), date('Y-m-d H:i:s', time()));
+        $this->success('安装成功');
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('event:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        Artisan::call('permission:cache-reset');
+        $next($data);
     }
 }

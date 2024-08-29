@@ -5,14 +5,14 @@
         <ul class="requirement"><li class="li-title">{{$result['title']}}</li><li class="li-title">推荐配置</li><li class="li-title">当前状态</li></ul>
         @if(isset($result['results']) && $result['results'])
             @foreach($result['results'] as $item)
-                <ul class="requirement lists">
+                <ul class="requirement lists @if(!$item['state']) error @endif">
                     <li class="body">{{$item['title']}}</li>
                     <li class="body">{{$item['config']}}</li>
                     <li class="body">
                         @if($item['state'])
                             <i class="layui-icon layui-icon-success"></i>
                         @else
-                            <i class="layui-icon layui-icon-error"></i>
+                            <i class="layui-icon layui-icon-error" style="color: red"></i>
                         @endif
                     </li>
                 </ul>

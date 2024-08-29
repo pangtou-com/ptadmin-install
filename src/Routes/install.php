@@ -27,5 +27,5 @@ Route::group(['prefix' => 'install', 'middleware' => \PTAdmin\Install\Middleware
     Route::get('/', [\PTAdmin\Install\Controller\InstallController::class, 'welcome']);
     Route::get('/requirements', [\PTAdmin\Install\Controller\InstallController::class, 'requirements']);
     Route::match(['get', 'post'], '/env', [\PTAdmin\Install\Controller\InstallController::class, 'environment']);
-    Route::match(['get', 'post'], '/finish', [\PTAdmin\Install\Controller\InstallController::class, 'finish']);
+    Route::match(['post'], '/stream', [\PTAdmin\Install\Controller\InstallController::class, 'stream']);
 });

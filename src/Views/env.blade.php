@@ -42,7 +42,7 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label">后台地址</label>
                             <div class="layui-input-block">
-                                <input type="text" name="app_system_prefix" value="{!! \Illuminate\Support\Str::random(9) !!}" placeholder="请输入地址名" autocomplete="off" class="layui-input">
+                                <input type="text" name="app_system_prefix" value="{!! \Illuminate\Support\Str::random(8) !!}" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                     </div>
@@ -122,71 +122,12 @@
 @section('button')
     <div style="text-align: center">
         <div class="layui-btn-group">
-            <button type="button" id="pre" class="layui-btn layui-btn-sm">上一步</button>
+            <a href="/install/requirements" class="layui-btn layui-btn-sm">上一步</a>
             <button type="button" id="submit" class="layui-btn layui-bg-blue layui-btn-sm">确认安装</button>
         </div>
     </div>
 @endsection
 
 @section('script')
-<script>
-    layui.use(['form', 'layer'], function(){
-        const form = layui.form;
-        const layer = layui.layer;
-
-        layui.$("#pre").on('click', () => {
-            location.href = '/install/requirements'
-        })
-
-        //监听提交
-        layui.$("#submit").on('click', function() {
-            const data = form.val('form-data')
-            const step_one = () => {
-                send("正在配置信息", 0, function () {
-                    step_two()
-                }, data)
-            }
-
-            const step_two = () => {
-                send("正在初始化数据库", 1, function () {
-                    step_three()
-                }, data)
-            }
-
-            const step_three = () => {
-                send("正在写入基础数据", 2, function () {
-                    location.href = '/install/finish';
-                }, data)
-            }
-
-            const send = (msg, step, callback, data = {}) => {
-                const index = layer.msg(msg, {
-                    icon: 16,
-                    shade: 0.01
-                });
-                layui.$.ajax({
-                    url: `/install/env?val=${step}`,
-                    type: 'post',
-                    data: data,
-                    dataType: 'json',
-                    success: (res) => {
-                        layer.close(index)
-                        if (res.code !== 0) {
-                            layer.msg(res.message, {icon: 2})
-                            return
-                        }
-                        if (callback !== undefined) {
-                            callback(res)
-                        }
-                    }
-                })
-            }
-
-            step_one()
-
-        });
-
-
-    });
-</script>
+    @include("install::_js")
 @endsection

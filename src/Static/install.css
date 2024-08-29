@@ -165,4 +165,65 @@ a {
 }
 .red {
   color: red;
-}/*# sourceMappingURL=app.css.map */
+}
+.error{
+    background: red;
+    color: #fff;
+}
+.console-box{
+    width: 100%;
+    height: 100%;
+    background: rgba(31, 31, 32, 0.9);
+    color: white;
+}
+.console-box .title {
+    padding: 20px 20px 5px;
+}
+.console-box .item {
+    padding: 0 20px 20px;
+    height: calc(100% - 80px);
+    overflow-y: auto;
+}
+.console-box .item .time{
+    color: #b7d5a0;
+    font-size: 20px;
+}
+.console-box .item li{
+    line-height: 2!important;
+    height: auto!important;
+}
+.console-box .item li span{
+    display: inline-block;
+    width: 60px;
+    margin-right: 10px;
+}
+.loading-dots {
+    display: inline-block;
+    font-size: 16px;
+    letter-spacing: 3px;
+}
+.loading-dots span {
+    animation: loading 1.5s infinite;
+    opacity: 0;
+}
+.loading-dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.3s;
+}
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.6s;
+}
+@keyframes loading {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+

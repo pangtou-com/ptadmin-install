@@ -23,15 +23,17 @@ declare(strict_types=1);
 
 namespace PTAdmin\Install\Controller;
 
-use PTAdmin\Install\Service\EnvService;
+use Illuminate\Pipeline\Pipeline;
+use PTAdmin\Install\Service\Pipe\Complete;
+use PTAdmin\Install\Service\Pipe\ConfigEnv;
+use PTAdmin\Install\Service\Pipe\DatabaseInitialize;
+use PTAdmin\Install\Service\Pipe\ValidateData;
 use PTAdmin\Install\Service\RequirementService;
-use PTAdmin\Install\Service\SqlService;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InstallController
 {
     private $requirementService;
-    private $envService;
-    private $sqlService;
 
     private $tabs = [
         ['title' => '使用协议', 'icon' => 'layui-icon-read'],
@@ -40,14 +42,9 @@ class InstallController
         ['title' => '完成安装', 'icon' => 'layui-icon-template-1'],
     ];
 
-    public function __construct(
-        RequirementService $requirementService,
-        EnvService $envService,
-        SqlService $sqlService
-    ) {
+    public function __construct(RequirementService $requirementService)
+    {
         $this->requirementService = $requirementService;
-        $this->envService = $envService;
-        $this->sqlService = $sqlService;
         view()->share(['tabs' => $this->tabs]);
     }
 
@@ -71,36 +68,37 @@ class InstallController
      */
     public function environment()
     {
-        if (request()->isMethod('post')) {
-            $val = (int) request()->get('val', 0);
-            if (0 === $val) {
-                request()->validate(config('install.form.rules', []), [], config('install.form.attributes'));
-                $data = request()->all();
-                $this->envService->checkDatabaseConnection($data);
-                $this->envService->saveEnvFile($data);
-                $this->envService->setCacheData($data);
-            } elseif (1 === $val) {
-                $this->sqlService->initialization();
-                $this->sqlService->run();
-            } elseif (2 === $val) {
-                $data = $this->envService->getCacheData();
-                $this->envService->createManager($data);
-            }
-
-            return response()->json(['code' => 0, 'message' => 'success']);
-        }
-
         $step = 2;
         $url = request()->getSchemeAndHttpHost();
 
         return view('install::env', compact('step', 'url'));
     }
 
-    public function finish()
+    /**
+     * 使用数据流方式执行安装流程.
+     */
+    public function stream(): StreamedResponse
     {
-        $step = 3;
-        $this->envService->createInstallFiles();
+        header('Content-Type:text/event-stream');
+        header('X-Powered-By:ptadmin');
+        header('Cache-Control:no-cache');
+        header('X-Accel-Buffering:no');
+        $data = request()->all();
+        $response = response()->stream(function () use ($data): void {
+            ob_end_flush();
+            ob_implicit_flush(1);
+            app(Pipeline::class)
+                ->send($data)
+                ->through([
+                    ValidateData::class,
+                    ConfigEnv::class,
+                    DatabaseInitialize::class,
+                    Complete::class,
+                ])->thenReturn();
+            ob_implicit_flush(0);
+        });
+        $response->sendContent();
 
-        return view('install::finish', compact('step'));
+        return $response;
     }
 }

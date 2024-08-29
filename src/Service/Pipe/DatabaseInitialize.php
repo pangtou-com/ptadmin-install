@@ -21,25 +21,63 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
-namespace PTAdmin\Install\Middleware;
+namespace PTAdmin\Install\Service\Pipe;
 
-class CanInstall
+use Illuminate\Support\Facades\Artisan;
+use PTAdmin\Addon\Service\Database;
+
+class DatabaseInitialize
 {
-    public function handle($request, \Closure $next)
-    {
-        if (file_exists(storage_path('installed')) && $this->isAccessInstall()) {
-            abort(404);
-        } elseif (!file_exists(__DIR__.'/../storage/installed') && !$this->isAccessInstall()) {
-            header('Location: /install');
+    use FormatOutputTrait;
 
-            exit;
+    public function handle($data, \Closure $next): void
+    {
+        if (!$this->migrate()) {
+            return;
+        }
+        if (!$this->importSql()) {
+            return;
         }
 
-        return $next($request);
+        $next($data);
     }
 
-    private function isAccessInstall(): bool
+    /**
+     * 执行迁移命令.
+     */
+    private function migrate(): bool
     {
-        return isset($_SERVER['REQUEST_URI']) && '/install' === substr($_SERVER['REQUEST_URI'], 0, 8);
+        try {
+            $this->process('正在执行数据库迁移命令...');
+
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Exception $exception) {
+            $this->error('迁移命令执行失败:'.$exception->getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 导入数据.
+     */
+    private function importSql(): bool
+    {
+        $filename = \dirname(__DIR__).\DIRECTORY_SEPARATOR.'..'.\DIRECTORY_SEPARATOR.'init.sql';
+        if (is_file($filename)) {
+            $this->process('正在导入数据库初始化数据...');
+
+            try {
+                app(Database::class)->restoreData($filename);
+            } catch (\Exception $exception) {
+                $this->error('数据库初始化执行失败:'.$exception->getMessage());
+
+                return false;
+            }
+        }
+
+        return true;
     }
 }
