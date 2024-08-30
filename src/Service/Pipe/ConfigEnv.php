@@ -102,27 +102,22 @@ class ConfigEnv
     private function checkDatabaseConnection($data): bool
     {
         $connection = $data['db_connection'];
-        $settings = config("database.connections.{$connection}");
+        $settings = [
+            'driver' => $connection,
+            'host' => $data['db_host'],
+            'port' => $data['db_port'],
+            'database' => $data['db_database'],
+            'username' => $data['db_username'],
+            'password' => $data['db_password'],
+            'prefix' => $data['db_prefix'] ?? '',
+        ];
         $database = config('database');
-        config([
-            'database' => [
-                'default' => $connection,
-                'migrations' => $database['migrations'],
-                'prefix' => $data['db_prefix'] ?? '',
-                'placeholder' => $database['placeholder'] ?? '',
-                'connections' => [
-                    $connection => array_merge($settings, [
-                        'driver' => $connection,
-                        'host' => $data['db_host'],
-                        'port' => $data['db_port'],
-                        'database' => $data['db_database'],
-                        'username' => $data['db_username'],
-                        'password' => $data['db_password'],
-                        'prefix' => $data['db_prefix'] ?? '',
-                    ]),
-                ],
-            ],
+        $database['default'] = $connection;
+        $database['db_prefix'] = $data['db_prefix'] ?? '';
+        $database['connections'] = array_merge($database['connections'], [
+            $connection => $settings,
         ]);
+        config(['database' => $database]);
         $this->process('链接数据库');
         app('db')->purge();
 
