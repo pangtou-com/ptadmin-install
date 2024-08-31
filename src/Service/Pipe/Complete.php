@@ -40,13 +40,13 @@ class Complete
             return;
         }
         File::put(storage_path('installed'), date('Y-m-d H:i:s', time()));
-        $this->success('安装成功');
         Artisan::call('cache:clear');
         Artisan::call('config:clear');
         Artisan::call('event:clear');
         Artisan::call('route:clear');
         Artisan::call('view:clear');
         Artisan::call('permission:cache-reset');
+        $this->success('安装成功');
         $next($data);
     }
 }

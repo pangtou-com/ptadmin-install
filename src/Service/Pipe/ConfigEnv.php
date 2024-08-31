@@ -146,9 +146,17 @@ class ConfigEnv
         $dsn = "mysql:host={$data['db_host']};charset={$character}";
 
         try {
-            $this->process('创建数据库...');
-            $sql = "CREATE DATABASE IF NOT EXISTS `{$data['db_database']}` DEFAULT CHARACTER SET {$character} DEFAULT COLLATE {$collation}";
             $pdo = new \PDO($dsn, $data['db_username'], $data['db_password']);
+            $stmt = $pdo->prepare('SHOW DATABASES LIKE :dbname');
+            $stmt->execute([':dbname' => $data['db_database']]);
+            // 校验数据库状态，在进行安装的时候需要的是一个空的数据库
+            if (false !== $stmt->fetch()) {
+                $this->error('数据库已存在，请先删除数据库');
+
+                return false;
+            }
+            $sql = "CREATE DATABASE IF NOT EXISTS `{$data['db_database']}` DEFAULT CHARACTER SET {$character} DEFAULT COLLATE {$collation}";
+            $this->process('创建数据库...');
             $pdo->query($sql);
             $pdo = null;
             $this->process('数据库创建完成');
