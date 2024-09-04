@@ -11,7 +11,7 @@ INSERT INTO `#PREFIX#permissions` ( `id`, `name`, `title`, `route`, `component`,
 ('10','system.setting','系统配置','settings',NULL,'pt-Menu','4',NULL,'admin','0',NULL,'nav','1','1','0',NULL,NULL,'1715166392','1718361276'),
 ('11','system.attachments','附件管理','attachments',NULL,NULL,'4',NULL,'admin','0',NULL,'nav','1','1','0',NULL,NULL,'1715166451','1715166610'),
 ('12','addon','插件管理',NULL,NULL,'layui-icon layui-icon-align-left','0',NULL,'admin','0',NULL,'dir','1','1','0',NULL,NULL,'1715166498','1715166498'),
-('13','addon.addons','插件列表','local-addons',NULL,NULL,'12',NULL,'admin','0',NULL,'nav','1','1','0',NULL,NULL,'1715166540','1715166540');
+('13','addon.addons','插件列表','addons',NULL,NULL,'12',NULL,'admin','0',NULL,'nav','1','1','0',NULL,NULL,'1715166540','1715166540');
 
 
 INSERT INTO `#PREFIX#setting_groups` ( `id`, `title`, `name`, `weight`, `parent_id`, `intro`, `addon_code`, `status`, `deleted_at`, `updated_at`, `created_at` ) VALUES

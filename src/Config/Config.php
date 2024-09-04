@@ -42,7 +42,7 @@ return [
         'bootstrap/cache/' => '755',
     ],
 
-    'env_example' =>  [
+    'env_example' => [
         'APP_NAME' => 'PTAdmin',
         'APP_ENV' => 'local',
         'APP_KEY' => '',
@@ -110,5 +110,10 @@ return [
             'db_username' => '数据库用户名',
             'db_password' => '数据库密码',
         ],
+    ],
+    'tables' => [
+        'attachments', 'setting_groups', 'settings', 'addons', 'model_has_permissions', 'model_has_roles', 'role_has_permissions',
+        'permissions', 'roles', 'systems', 'system_logs', 'user_bind_platforms', 'operation_records', 'users', 'user_tokens',
+        'user_money', 'user_verifies',
     ],
 ];

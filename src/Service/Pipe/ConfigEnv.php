@@ -145,15 +145,29 @@ class ConfigEnv
         $collation = config('database.connections.mysql.collation', 'utf8_unicode_ci');
         $dsn = "mysql:host={$data['db_host']};charset={$character}";
 
+        $tables = config('install.tables', []);
+
         try {
             $pdo = new \PDO($dsn, $data['db_username'], $data['db_password']);
             $stmt = $pdo->prepare('SHOW DATABASES LIKE :dbname');
             $stmt->execute([':dbname' => $data['db_database']]);
             // 校验数据库状态，在进行安装的时候需要的是一个空的数据库
             if (false !== $stmt->fetch()) {
-                $this->error('数据库已存在，请先删除数据库');
+                // 增加数据表判断，查看是否存在冲突的数据表
+                $stmt = $pdo->prepare('SELECT column_name from information_schema.columns WHERE  table_schema = :dbname');
+                $stmt->execute([':dbname' => $data['db_database']]);
+                $isAllow = true;
+                while ($row = $stmt->fetch()) {
+                    if (\in_array($data['db_prefix'].$row['column_name'], $tables, true)) {
+                        $this->error("数据库中已存在表【{$row['column_name']}】");
+                        $isAllow = false;
+                    }
+                }
+                if (!$isAllow) {
+                    $this->error('数据库创建失败,请删除数据库中的数据表或准备空数据库后重新安装');
 
-                return false;
+                    return false;
+                }
             }
             $sql = "CREATE DATABASE IF NOT EXISTS `{$data['db_database']}` DEFAULT CHARACTER SET {$character} DEFAULT COLLATE {$collation}";
             $this->process('创建数据库...');
