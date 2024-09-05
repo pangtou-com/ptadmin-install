@@ -168,6 +168,8 @@ class ConfigEnv
 
                     return false;
                 }
+
+                return true;
             }
             $sql = "CREATE DATABASE IF NOT EXISTS `{$data['db_database']}` DEFAULT CHARACTER SET {$character} DEFAULT COLLATE {$collation}";
             $this->process('创建数据库...');
