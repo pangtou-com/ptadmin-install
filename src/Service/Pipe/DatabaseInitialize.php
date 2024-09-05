@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace PTAdmin\Install\Service\Pipe;
 
 use Illuminate\Support\Facades\Artisan;
-use PTAdmin\Addon\Service\Database;
 
 class DatabaseInitialize
 {
@@ -33,9 +32,6 @@ class DatabaseInitialize
     public function handle($data, \Closure $next): void
     {
         if (!$this->migrate()) {
-            return;
-        }
-        if (!$this->importSql()) {
             return;
         }
 
@@ -55,27 +51,6 @@ class DatabaseInitialize
             $this->error('迁移命令执行失败:'.$exception->getMessage());
 
             return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 导入数据.
-     */
-    private function importSql(): bool
-    {
-        $filename = \dirname(__DIR__).\DIRECTORY_SEPARATOR.'..'.\DIRECTORY_SEPARATOR.'init.sql';
-        if (is_file($filename)) {
-            $this->process('正在导入数据库初始化数据...');
-
-            try {
-                app(Database::class)->restoreData($filename);
-            } catch (\Exception $exception) {
-                $this->error('数据库初始化执行失败:'.$exception->getMessage());
-
-                return false;
-            }
         }
 
         return true;

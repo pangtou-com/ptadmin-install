@@ -49,11 +49,11 @@ class RequirementService
     /**
      * 检测php模块.
      *
-     * @param $extend
+     * @param array $extend
      *
      * @return array
      */
-    private function checkExtend($extend): array
+    private function checkExtend(array $extend): array
     {
         $results = [];
         foreach ($extend as $item) {
@@ -70,11 +70,11 @@ class RequirementService
     /**
      * 检测扩展函数.
      *
-     * @param $func
+     * @param array $func
      *
      * @return array
      */
-    private function checkFunc($func): array
+    private function checkFunc(array $func): array
     {
         $results = [];
         foreach ($func as $requirement) {
@@ -91,11 +91,11 @@ class RequirementService
     /**
      * 检测文件夹权限.
      *
-     * @param $folders
+     * @param array $folders
      *
      * @return array
      */
-    private function checkFolders($folders): array
+    private function checkFolders(array $folders): array
     {
         $results = [];
         foreach ($folders as $folder => $permission) {
