@@ -40,6 +40,11 @@ trait FormatOutputTrait
         $this->output('error', $message, $data);
     }
 
+    protected function info($message, $data = []): void
+    {
+        $this->output('info', $message, $data);
+    }
+
     protected function output(string $type, $message, $data = []): void
     {
         $data = ['type' => $type, 'message' => $message, 'data' => $data];
@@ -50,6 +55,8 @@ trait FormatOutputTrait
          * 这个是标准的输出方式，我不需要这种标准输出，直接输出一个json字符串即可
          */
         echo json_encode($data)."\n\n";
-        usleep(50000);
+//        echo 'event:'.$type."\n";
+//        echo 'data:'.$message."\n\n";
+        usleep(100000);
     }
 }

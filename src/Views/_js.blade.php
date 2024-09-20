@@ -113,15 +113,14 @@
             success: function () {
                 const html = this.editConsole({
                     type: 'success',
-                    message: `安装完成 [请点击任意位置跳转或等待<font class="time"> 5 </font>秒后自动跳转]`
+                    message: `安装完成 [请点击任意位置跳转或等待<font class="time"> 50 </font>秒后自动跳转]`
                 })
 
-                let timer = 5
+                let timer = 50
                 let timerId = null
                 const thiz = this
                 const cronClose = () => {
                     html.querySelector(".time").innerHTML = ` ${(timer--).toString()} `
-                    console.log(timer)
                     if (timer <= 0) {
                         close()
                         return

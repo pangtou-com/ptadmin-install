@@ -113,12 +113,12 @@ class ConfigEnv
         ];
         $database = config('database');
         $database['default'] = $connection;
-        $database['db_prefix'] = $data['db_prefix'] ?? '';
+        $database['prefix'] = $data['db_prefix'] ?? '';
         $database['connections'] = array_merge($database['connections'], [
             $connection => $settings,
         ]);
         config(['database' => $database]);
-        $this->process('链接数据库');
+        $this->process('测试数据库链接');
         app('db')->purge();
 
         try {
@@ -134,6 +134,7 @@ class ConfigEnv
 
     /**
      * 数据库创建.
+     * TODO  需要在考虑兼容多种数据库的情况，目前只支持mysql.
      *
      * @param $data
      *
@@ -144,7 +145,6 @@ class ConfigEnv
         $character = config('database.connections.mysql.charset', 'utf8');
         $collation = config('database.connections.mysql.collation', 'utf8_unicode_ci');
         $dsn = "mysql:host={$data['db_host']};charset={$character}";
-
         $tables = config('install.tables', []);
 
         try {
@@ -153,13 +153,14 @@ class ConfigEnv
             $stmt->execute([':dbname' => $data['db_database']]);
             // 校验数据库状态，在进行安装的时候需要的是一个空的数据库
             if (false !== $stmt->fetch()) {
+                $this->info('数据库已存在，正在检测数据表是否有重复...');
                 // 增加数据表判断，查看是否存在冲突的数据表
-                $stmt = $pdo->prepare('SELECT column_name from information_schema.columns WHERE  table_schema = :dbname');
+                $stmt = $pdo->prepare('SELECT table_name from information_schema.tables WHERE  table_schema = :dbname');
                 $stmt->execute([':dbname' => $data['db_database']]);
                 $isAllow = true;
-                while ($row = $stmt->fetch()) {
-                    if (\in_array($data['db_prefix'].$row['column_name'], $tables, true)) {
-                        $this->error("数据库中已存在表【{$row['column_name']}】");
+                while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                    if (\in_array($this->tableName($data['db_prefix'], $row['table_name']), $tables, true)) {
+                        $this->error("数据库中已存在表【{$row['table_name']}】");
                         $isAllow = false;
                     }
                 }
@@ -168,6 +169,7 @@ class ConfigEnv
 
                     return false;
                 }
+                $this->process('数据表检测已完成');
 
                 return true;
             }
@@ -183,5 +185,22 @@ class ConfigEnv
         }
 
         return true;
+    }
+
+    /**
+     * 取消数据表名称前缀参数.
+     *
+     * @param $db_prefix
+     * @param $tableName
+     *
+     * @return mixed|string
+     */
+    private function tableName($db_prefix, $tableName)
+    {
+        if (Str::startsWith($tableName, $db_prefix)) {
+            return Str::replaceFirst($db_prefix, '', $tableName);
+        }
+
+        return $tableName;
     }
 }
