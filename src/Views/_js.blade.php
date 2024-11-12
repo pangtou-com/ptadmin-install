@@ -4,6 +4,12 @@
         <ul class="item"></ul>
     </div>
 </script>
+<script type="text/html" id="success_btn">
+    <div class="layui-btn-group">
+        <button class="layui-btn layui-btn-sm" data-event="home" >返回首页</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" data-event="admin" >进入管理后台</button>
+    </div>
+</script>
 <script>
     (function () {
         const url = "/install/stream"
@@ -14,6 +20,7 @@
             nodeNumber: 30,     // 允许的节点总数
             state: 0,           // 当前执行状态： 0 => 未开始, 1 => 执行中, 2 => 执行失败
             index: null,        // 弹出窗口的标识
+            send_data: null,    // 请求数据
             type_map: {
                 error: 'layui-bg-red',
                 success: 'layui-bg-green',
@@ -68,6 +75,27 @@
 
                 return li
             },
+            success_btn: function () {
+                const li = document.createElement('li')
+                li.innerHTML = document.getElementById("success_btn").innerHTML
+                li.setAttribute("style", "text-align:center;margin-top:20px")
+                this.console.appendChild(li)
+                this.clear()
+                this.scrollbarAuto()
+                li.addEventListener("click", function ({target}) {
+                    const { event } = target.dataset
+                    if (event === 'home') {
+                        window.location.href = success_url
+                    } else {
+                        if (eventAction.send_data === null || eventAction.send_data["app_system_prefix"] === undefined) {
+                            eventAction.send_data = {
+                                "app_system_prefix": document.querySelector("input[name='app_system_prefix']").value
+                            }
+                        }
+                        window.location.href = `/${eventAction.send_data["app_system_prefix"]}`
+                    }
+                })
+            },
             scrollbarAuto: function () {
                 const scrollHeight = this.console.scrollHeight;
                 if (scrollHeight < this.height) {
@@ -113,9 +141,9 @@
             success: function () {
                 const html = this.editConsole({
                     type: 'success',
-                    message: `安装完成 [请点击任意位置跳转或等待<font class="time"> 50 </font>秒后自动跳转]`
+                    message: `安装完成 [等待<font class="time"> 50 </font>秒后自动跳转]`
                 })
-
+                this.success_btn()
                 let timer = 50
                 let timerId = null
                 const thiz = this
